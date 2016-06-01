@@ -8,6 +8,7 @@ import bigchaindb
 from bigchaindb import Bigchain
 from bigchaindb.monitor import Monitor
 from bigchaindb.util import ProcessGroup
+from time import sleep
 
 
 logger = logging.getLogger(__name__)

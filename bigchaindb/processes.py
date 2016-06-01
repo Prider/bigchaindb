@@ -4,7 +4,7 @@ import multiprocessing as mp
 import rethinkdb as r
 
 import bigchaindb
-from bigchaindb.pipelines import block, election
+from bigchaindb.pipelines import block, election, stale
 from bigchaindb import Bigchain
 from bigchaindb.voter import Voter
 from bigchaindb.block import BlockDeleteRevert
@@ -70,6 +70,7 @@ class Processes(object):
         p_map_bigchain.start()
         logger.info('starting block')
         block.start()
+        stale.start(timeout=5)
         p_block_delete_revert.start()
 
         logger.info('starting voter')
