@@ -135,7 +135,7 @@ class Bigchain(object):
         response = r.table('backlog').insert(signed_transaction, durability=durability).run(self.conn)
         return response
 
-    def reassign_transaction(self, transaction, durability='soft'):
+    def reassign_transaction(self, transaction, durability='hard'):
         """Assign a transaction to a new node
 
         Args:
@@ -147,9 +147,10 @@ class Bigchain(object):
 
         if self.nodes_except_me:
             try:
-                index_current_assignee = self.nodes_except_me.index(transaction['assignee'])
-                new_assignee = random.choice(self.nodes_except_me[:index_current_assignee] +
-                                             self.nodes_except_me[index_current_assignee + 1:])
+                federation_nodes = self.nodes_except_me + [self.me]
+                index_current_assignee = federation_nodes.index(transaction['assignee'])
+                new_assignee = random.choice(federation_nodes[:index_current_assignee] +
+                                             federation_nodes[index_current_assignee + 1:])
             except ValueError:
                 # current assignee not in federation
                 new_assignee = random.choice(self.nodes_except_me)

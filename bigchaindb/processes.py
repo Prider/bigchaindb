@@ -70,7 +70,7 @@ class Processes(object):
         p_map_bigchain.start()
         logger.info('starting block')
         block.start()
-        stale.start(timeout=5)
+        stale.start()
         p_block_delete_revert.start()
 
         logger.info('starting voter')
