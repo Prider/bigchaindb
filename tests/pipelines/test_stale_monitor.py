@@ -22,6 +22,16 @@ def test_get_stale(b, user_vk):
 
 
 def test_reassign_transactions(b, user_vk):
+    # test with single node
+    tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+    tx = b.sign_transaction(tx, b.me_private)
+    b.write_transaction(tx, durability='hard')
+
+    stm = stale.StaleTransactionMonitor(timeout=0.001,
+                                        backlog_reassign_delay=0.001)
+    stm.reassign_transactions(tx)
+
+    # test with federation
     tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
     tx = b.sign_transaction(tx, b.me_private)
     b.write_transaction(tx, durability='hard')
@@ -31,8 +41,7 @@ def test_reassign_transactions(b, user_vk):
     stm.bigchain.nodes_except_me = ['aaa', 'bbb', 'ccc']
     stm.reassign_transactions(tx)
 
-    assert r.table('backlog').count().run(b.conn) == 1
-    reassigned_tx = list(r.table('backlog').run(b.conn))[0]
+    reassigned_tx = r.table('backlog').get(tx['id']).run(b.conn)
     assert reassigned_tx['assignment_timestamp'] > tx['assignment_timestamp']
     assert reassigned_tx['assignee'] != tx['assignee']
 
