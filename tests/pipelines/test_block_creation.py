@@ -81,10 +81,21 @@ def test_duplicate_transaction(b, user_vk):
     block_doc = b.create_block(txs)
     block_maker.write(block_doc)
 
+    # block is in bigchain
     assert r.table('bigchain').get(block_doc['id']).run(b.conn) == block_doc
+
+    b.write_transaction(txs[0])
+
+    # verify tx is in the backlog
+    assert r.table('backlog').get(txs[0]['id']).run(b.conn) is not None
+
     # try to validate a transaction that's already in the chain; should not
     # work
     assert block_maker.validate_tx(txs[0]) is None
+
+    # duplicate tx should be removed from backlog
+    assert r.table('backlog').get(txs[0]['id']).run(b.conn) is None
+
 
 def test_delete_tx(b, user_vk):
     block_maker = block.Block()
