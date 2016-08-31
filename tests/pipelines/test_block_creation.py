@@ -69,6 +69,23 @@ def test_write_block(b, user_vk):
     assert r.table('bigchain').get(block_doc['id']).run(b.conn) == block_doc
 
 
+def test_duplicate_transaction(b, user_vk):
+    block_maker = block.Block()
+
+    txs = []
+    for i in range(10):
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+        tx = b.sign_transaction(tx, b.me_private)
+        txs.append(tx)
+
+    block_doc = b.create_block(txs)
+    block_maker.write(block_doc)
+
+    assert r.table('bigchain').get(block_doc['id']).run(b.conn) == block_doc
+    # try to validate a transaction that's already in the chain; should not
+    # work
+    assert block_maker.validate_tx(txs[0]) is None
+
 def test_delete_tx(b, user_vk):
     block_maker = block.Block()
 
